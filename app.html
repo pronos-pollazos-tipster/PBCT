@@ -1,0 +1,191 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0d1714">
+<title>Predictor Fútbol</title>
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icono.svg" type="image/svg+xml">
+<link rel="stylesheet" href="estilo.css">
+</head>
+<body>
+<header class="barra">
+  <div class="marca">
+    <svg viewBox="0 0 32 32" aria-hidden="true"><circle cx="16" cy="16" r="14" fill="none" stroke="currentColor" stroke-width="2.5"/><path d="M16 9l5 3.6-1.9 5.9h-6.2L11 12.6z" fill="currentColor"/></svg>
+    <span>Predictor <b>Fútbol</b></span><span class="version" id="version">v2.3.1</span>
+  </div>
+  <div class="estado" id="estado" title="Estado de la base de datos">…</div>
+  <div class="plataforma" id="selCasa" title="Casa donde apuestas: solo se proponen mercados que existen allí">
+    <button data-casa="bet365">Bet365</button><button data-casa="versus">Versus</button></div>
+  <button class="primario" id="btnActualizar" title="Resultados, onces, cuotas y estadísticas de los próximos partidos (rápido, ESPN + football-data)">⟳ Actualizar partidos</button>
+  <button class="icono" id="btnTema" aria-label="Cambiar tema" title="Cambiar tema claro/oscuro">◐</button>
+</header>
+<nav class="comps" id="selComp" role="tablist" aria-label="Competición"></nav>
+<div class="buscador"><span>🔍</span><input id="buscaEquipo" list="listaEquipos" autocomplete="off" placeholder="Buscar equipo…">
+  <datalist id="listaEquipos"></datalist><button class="mini" id="btnBuscar">Ver ficha</button></div>
+<div class="progreso" id="progreso" hidden><span class="spinner"></span> <span id="progresoTxt"></span>
+  <button class="mini" id="progresoVer">Ver registro</button></div>
+
+<nav class="pestanas" id="pestanas">
+  <button data-vista="pronosticos" class="activa">Pronósticos</button>
+  <button data-vista="directo">En directo</button>
+  <button data-vista="historial">Historial</button>
+  <button data-vista="quiniela" class="destacada">🎫 Quiniela</button>
+  <button data-vista="combinada" class="destacada">🧩 Combinada segura</button>
+  <button data-vista="apuestas" class="destacada">💰 Mis apuestas</button>
+  <button data-vista="clasificacion">Clasificación</button>
+  <button data-vista="resultados">Resultados</button>
+  <button data-vista="jugadores">Jugadores</button>
+  <button data-vista="datos" data-solo="copas">Datos equipos</button>
+  <button data-vista="actualizar">Sincronizar</button>
+  <button data-vista="movil" id="tabMovil">Móvil</button>
+  <button data-vista="ajustes">Ajustes IA</button>
+</nav>
+
+<main>
+  <!-- PRONÓSTICOS: lista ordenada de más a menos fiable + detalle -->
+  <section class="vista activa" id="v-pronosticos">
+    <div class="partidos-layout">
+      <aside class="lista" id="listaPartidos"><div class="vacio">Cargando…</div></aside>
+      <article class="analisis" id="analisis"><div class="vacio grande">Elige un partido para ver la predicción.</div></article>
+    </div>
+  </section>
+
+  <section class="vista" id="v-directo">
+    <div class="partidos-layout">
+      <aside class="lista" id="listaDirecto"><div class="vacio">Cargando…</div></aside>
+      <article class="analisis" id="detalleDirecto"><div class="vacio grande">Elige un partido para ver sus estadísticas.</div></article>
+    </div>
+  </section>
+
+  <section class="vista" id="v-historial">
+    <div class="tarjeta" id="aciertos"></div>
+    <div class="partidos-layout">
+      <aside class="lista" id="listaHistorial"><div class="vacio">Cargando…</div></aside>
+      <article class="analisis" id="detalleHistorial"><div class="vacio grande">Elige una actualización para ver lo que dijo el modelo en ese momento.</div></article>
+    </div>
+  </section>
+
+  <section class="vista" id="v-equipo"><div id="fichaEquipo"></div></section>
+
+  <section class="vista" id="v-quiniela">
+    <nav class="subpestanas" id="qSub"><button data-q="actual" class="activa">🎫 Jornada actual</button><button data-q="hist">📚 Historial de quinielas</button></nav>
+    <div class="tarjeta" id="quinielaCab"><div class="vacio"><span class="spinner"></span> Buscando la quiniela activa…</div></div>
+    <div id="quinielaCuerpo"></div>
+    <div class="tarjeta" id="quinielaHist"></div>
+  </section>
+
+  <section class="vista" id="v-combinada"><div id="combinada"></div></section>
+
+  <section class="vista" id="v-apuestas">
+    <nav class="subpestanas" id="misSub"><button data-m="diario" class="activa">📒 Mi diario</button><button data-m="presupuesto">💶 Presupuesto del finde</button></nav>
+    <div id="misDiario"></div>
+    <div id="misPresupuesto" hidden></div>
+  </section>
+
+  <section class="vista" id="v-clasificacion"><div id="clasif" class="tarjeta"></div></section>
+  <section class="vista" id="v-resultados"><div id="resultados" class="tarjeta"></div></section>
+
+  <section class="vista" id="v-jugadores">
+    <div class="tarjeta">
+      <div class="fila-controles"><label>Equipo <select id="selEquipo"></select></label></div>
+      <div id="jugadores"></div>
+    </div>
+  </section>
+
+  <section class="vista" id="v-datos">
+    <div class="tarjeta">
+      <h2>Datos que tiene el modelo de cada equipo</h2>
+      <p class="nota">Partidos de Champions, de su liga nacional y valoración Opta / Elo. Un equipo con pocos datos (⚠️)
+        tendrá predicciones menos precisas.</p>
+      <div id="diagnostico"></div>
+    </div>
+  </section>
+
+  <section class="vista" id="v-actualizar">
+    <div class="tarjeta">
+      <h2>Sincronizar datos</h2>
+      <div class="botones" id="botonesTareas"></div>
+      <p class="nota" id="notaActualizar"></p>
+      <p class="nota" id="notaAuto"></p>
+      <div class="grupo-tit">Registros (pulsa uno para ver todo lo que hace, línea a línea)</div>
+      <div class="lista-tareas" id="listaTareas"></div>
+      <div class="consola-cab"><span id="tituloTarea">Registro</span><button class="mini" id="btnParar" hidden>Detener</button></div>
+      <pre class="consola" id="consola">Aquí verás el progreso.</pre>
+    </div>
+  </section>
+
+  <section class="vista" id="v-ajustes">
+    <div class="tarjeta">
+      <h2>🤖 Asistente de IA (lee noticias y explica cada pronóstico)</h2>
+      <p class="nota">Es opcional. No cambia los números del modelo: lee las noticias de los dos equipos y te explica el
+        pronóstico, avisando si una baja o una rotación lo contradice.</p>
+      <div class="fila-controles">
+        <label>Proveedor <select id="iaProv">
+          <option value="ninguno">Desactivado</option>
+          <option value="anthropic">Claude (API de Anthropic, de pago)</option>
+          <option value="ollama">Ollama en este PC (gratis)</option></select></label>
+        <label>Modelo (opcional) <input id="iaModelo" placeholder="automático" style="width:14em"></label>
+        <label id="lblClave">Clave de API <input id="iaClave" type="password" placeholder="sk-ant-…" style="width:18em"></label>
+        <button class="primario" id="btnIaGuardar">Guardar</button>
+      </div>
+      <p class="nota" id="iaEstado"></p>
+      <ul class="nota">
+        <li><b>Claude (API):</b> crea una clave en console.anthropic.com. Se paga por uso (cada análisis cuesta muy poco con el modelo automático). La clave se guarda solo en este PC.</li>
+        <li><b>Ollama (gratis):</b> instala Ollama desde ollama.com y en una consola escribe <code>ollama pull qwen2.5:7b</code>. Necesita un PC con 16 GB de RAM o más. Más lento y algo menos preciso.</li>
+      </ul>
+    </div>
+    <div class="tarjeta">
+      <h2>🧠 IA de números (clasificación, motivación, Europa, entrenador nuevo)</h2>
+      <p class="nota">Aprende de ~12.000 partidos de 6 ligas (5 temporadas + la actual) cuánto hay que corregir las
+        probabilidades por la clasificación, lo que se juega cada equipo, el cansancio por Champions/Europa League y los
+        cambios de entrenador. Antes de usarse hace un <b>examen</b> con los partidos más recientes, que no ha visto: solo se
+        activa si acierta más que las cuotas de las casas. Se reentrena sola cada semana. El motor no se toca.</p>
+      <div id="iaNumeros"></div>
+    </div>
+    <div class="tarjeta">
+      <h2>🧠 IA de predicción (aprendizaje automático)</h2>
+      <p class="nota">Se entrena sola al sincronizar con todos los partidos guardados. Solo se usa si, en una prueba con
+        partidos que no ha visto, mejora al modelo actual. Si no mejora, queda desactivada y no afecta a nada.</p>
+      <div id="iaModelos"></div>
+    </div>
+  </section>
+
+  <section class="vista" id="v-movil">
+    <div class="tarjeta" id="movilPC">
+      <h2>Instalar en el móvil Android</h2>
+      <ol class="pasos">
+        <li>Instala <b>Termux</b> desde <b>F-Droid</b> (la versión de Google Play está anticuada).</li>
+        <li>El móvil y este PC deben estar en la <b>misma red Wi-Fi</b>.</li>
+        <li>Pulsa <button id="btnActivarMovil">Activar conexión con el móvil</button>
+          (si Windows pregunta por el firewall, permite <i>redes privadas</i>).</li>
+        <li>En Termux escribe este comando (todo en una línea):
+          <div class="comando"><code id="cmdMovil">—</code><button class="mini" id="btnCopiar">Copiar</button></div></li>
+        <li>Al terminar se abre la aplicación en el navegador del móvil. En Chrome: menú ⋮ → <b>Añadir a pantalla de inicio</b>.
+          Para abrirla otra vez: escribe <code>predictor</code> en Termux.</li>
+      </ol>
+      <p class="nota">En el móvil todo funciona en local con las mismas bases de datos. FBref bloquea los móviles, así que el móvil
+        se actualiza con ESPN y football-data; para copiar los datos completos del PC usa “Traer datos del PC” desde el móvil.</p>
+    </div>
+    <div class="tarjeta" id="movilTel" hidden>
+      <h2>Conectar con el PC</h2>
+      <p>Trae al móvil las bases de datos completas del PC. En el PC: pestaña Móvil → “Activar conexión con el móvil”.</p>
+      <div class="fila-controles"><label>IP del PC <input id="ipPC" placeholder="192.168.1.20" inputmode="decimal"></label>
+        <button id="btnImportar">Traer datos del PC</button></div>
+      <p id="resImportar" class="nota"></p>
+    </div>
+  </section>
+</main>
+
+<dialog id="dlgInforme">
+  <div class="dlg-cab"><b id="dlgTitulo">Informe completo</b><button class="icono" id="cerrarInforme" aria-label="Cerrar">✕</button></div>
+  <pre id="textoInforme" class="consola"></pre>
+</dialog>
+
+<script>window.PBCT_WEB = true;</script>
+<script src="config.js"></script>
+<script src="web.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
