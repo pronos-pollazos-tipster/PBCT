@@ -1,0 +1,540 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#000000">
+<title>PBCT</title>
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icono-192.png">
+<link rel="apple-touch-icon" href="icono-192.png">
+<style>
+  :root { --fondo: #0d1512; --panel: #142019; --panel2: #1a2a21; --borde: #24382c; --texto: #e7f2ea; --suave: #93a99a;
+    --acento: #c6f432; --ok: #4ade80; --aviso: #fbbf24; --mal: #f87171; --local: #3b82f6; --empate: #7c8a82; --visit: #f97316; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: var(--fondo); color: var(--texto); font: 16px/1.45 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+  body { padding: env(safe-area-inset-top) 0 env(safe-area-inset-bottom); }
+  header { position: sticky; top: 0; z-index: 5; background: color-mix(in srgb, var(--fondo) 92%, transparent); backdrop-filter: blur(8px);
+    border-bottom: 1px solid var(--borde); padding: 10px 16px; display: flex; align-items: center; gap: 10px; }
+  header h1 { font-size: 1.05rem; margin: 0; flex: 1; } header h1 b { color: var(--acento); }
+  main { max-width: 760px; margin: 0 auto; padding: 12px 16px 40px; }
+  button { font: inherit; color: inherit; background: var(--panel2); border: 1px solid var(--borde); border-radius: 10px; padding: 8px 12px; cursor: pointer; }
+  button.primario { background: var(--acento); color: #0d1512; border-color: transparent; font-weight: 700; }
+  button.mini { padding: 4px 10px; font-size: .85rem; }
+  .tarjeta { background: var(--panel); border: 1px solid var(--borde); border-radius: 14px; padding: 14px; margin: 12px 0; }
+  .nota { color: var(--suave); font-size: .86rem; }
+  .chips { display: flex; gap: 6px; overflow-x: auto; padding: 4px 0 8px; scrollbar-width: none; }
+  .chips button { white-space: nowrap; border-radius: 99px; }
+  .chips button.activa { background: var(--acento); color: #0d1512; border-color: transparent; font-weight: 700; }
+  .partido { border-left: 4px solid var(--borde); }
+  .partido.Alta { border-left-color: var(--ok); } .partido.Media { border-left-color: var(--aviso); } .partido.Baja { border-left-color: var(--mal); }
+  .cab { display: flex; justify-content: space-between; gap: 8px; font-size: .82rem; color: var(--suave); }
+  .equipos { font-weight: 700; font-size: 1.02rem; margin: 4px 0 8px; }
+  .puesto { font-size: .72em; color: var(--suave); border: 1px solid var(--borde); border-radius: 6px; padding: 0 4px; margin-left: 3px; vertical-align: middle; }
+  .pick { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; padding: 6px 0; border-top: 1px dashed var(--borde); }
+  .pick:first-of-type { border-top: 0; }
+  .pick .m { flex: 1; } .pick .p { font-weight: 800; font-size: 1.1rem; } .pick .c { color: var(--suave); font-size: .85rem; min-width: 4.2em; text-align: right; }
+  .seg .p { color: var(--ok); }
+  .avisos { font-size: .82rem; color: var(--aviso); margin-top: 6px; }
+  .barra { display: flex; height: 18px; border-radius: 6px; overflow: hidden; font-size: .7rem; margin: 6px 0 2px; }
+  .barra div { display: flex; align-items: center; justify-content: center; color: #fff; min-width: 0; }
+  .combi .tot { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin: 8px 0; }
+  .combi .tot div { background: var(--panel2); border-radius: 10px; padding: 8px; text-align: center; }
+  .combi .tot b { display: block; font-size: 1.15rem; }
+  #login { position: fixed; inset: 0; background: #000; color: #fff; display: flex; flex-direction: column; align-items: center;
+    justify-content: center; padding: 24px; z-index: 20; }
+  #login[hidden] { display: none; }
+  #login form { width: min(340px, 100%); display: flex; flex-direction: column; gap: 12px; }
+  #login form[hidden] { display: none; }
+  #login label { color: #fff; font-size: 1.05rem; letter-spacing: .02em; }
+  #login input { width: 100%; font: inherit; font-size: 1.1rem; padding: 12px; border-radius: 8px; border: 1px solid #fff; background: #000;
+    color: #fff; outline: none; }
+  #login input:focus { border-color: #fff; box-shadow: 0 0 0 2px rgba(255, 255, 255, .25); }
+  #login button { background: #000; color: #fff; border: 1px solid #fff; border-radius: 8px; padding: 12px; font-weight: 700; }
+  #login button:disabled { opacity: .5; }
+  #loginMsg { color: #fff; min-height: 1.4em; margin-top: 14px; text-align: center; width: min(340px, 100%); font-size: .95rem; }
+  .error { color: var(--mal); }
+  .vacio { text-align: center; color: var(--suave); padding: 24px 0; }
+  details summary { cursor: pointer; color: var(--suave); font-size: .9rem; }
+  .pestanas { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin: 8px 0 4px; }
+  .pestanas button { border-radius: 10px; padding: 9px 2px; font-size: .8rem; }
+  .verde { color: var(--ok); } .rojo { color: var(--mal); }
+  .pestanas button.activa { background: var(--acento); color: #0d1512; border-color: transparent; font-weight: 700; }
+  .tabla { width: 100%; border-collapse: collapse; font-size: .86rem; }
+  .tabla td, .tabla th { padding: 5px 4px; border-top: 1px solid var(--borde); text-align: left; }
+  .tabla th { color: var(--suave); font-weight: 600; } .tabla .d { text-align: right; white-space: nowrap; }
+  .signo { font-weight: 800; color: var(--acento); letter-spacing: .05em; }
+  select, input.cuota { font: inherit; color: var(--texto); background: var(--panel2); border: 1px solid var(--borde); border-radius: 10px; padding: 9px; width: 100%; }
+  .campo { margin: 8px 0; } .campo label { display: block; font-size: .85rem; color: var(--suave); margin-bottom: 3px; }
+  .veredicto { border-radius: 12px; padding: 12px; margin-top: 10px; font-weight: 700; }
+  .veredicto.valor { background: color-mix(in srgb, var(--ok) 20%, transparent); } .veredicto.justo { background: color-mix(in srgb, var(--aviso) 18%, transparent); }
+  .veredicto.sin_valor { background: color-mix(in srgb, var(--mal) 18%, transparent); }
+  .cifras { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 10px; }
+  .cifras div { background: var(--panel2); border-radius: 10px; padding: 8px; text-align: center; font-size: .8rem; color: var(--suave); }
+  .cifras b { display: block; font-size: 1.15rem; color: var(--texto); }
+</style>
+</head>
+<body>
+<div id="login" hidden>
+  <form id="fClave" autocomplete="off">
+    <label for="clave">Contraseña</label>
+    <input id="clave" type="password" autocomplete="current-password" required>
+    <button type="submit" id="bClave">Enviar contraseña</button>
+  </form>
+  <form id="fCodigo" hidden autocomplete="off">
+    <label for="codigo">Código</label>
+    <input id="codigo" inputmode="numeric" pattern="[0-9]*" maxlength="6" autocomplete="one-time-code" required>
+    <button type="submit" id="bCodigo">Enviar código</button>
+    <button type="button" id="bReenviar" style="border-color:#555;font-weight:400">¿No te ha llegado? Reenviar código</button>
+  </form>
+  <p id="loginMsg"></p>
+</div>
+<div id="app" hidden>
+  <header><h1><b>PBCT</b></h1><button class="mini" id="btnAvisos">🔔 Avisos</button><button class="mini" id="btnRecargar" title="Recargar">⟳</button><button class="mini" id="btnSalir" title="Salir">🔒</button></header>
+  <main>
+    <p id="hola" style="margin:4px 0 0;font-weight:700"></p>
+    <p class="nota" id="actualizado"></p>
+    <div class="pestanas" id="pestanas"><button data-v="partidos" class="activa">⚽ Partidos</button><button data-v="quiniela">🎫 Quiniela</button><button data-v="cuota">🔎 Cuotas</button><button data-v="examen">🧪 Examen</button></div>
+    <section id="vPartidos">
+      <div class="chips" id="dias"></div>
+      <div class="chips" id="ligas"></div>
+      <div id="combinada"></div>
+      <div id="lista"></div>
+    </section>
+    <section id="vQuiniela" hidden></section>
+    <section id="vCuota" hidden></section>
+    <section id="vExamen" hidden></section>
+    <p class="nota" id="pie"></p>
+  </main>
+</div>
+<script src="config.js"></script>
+<script>
+const $ = (s) => document.querySelector(s);
+const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const pct = (x) => (x == null ? "–" : Math.round(x * 100) + "%");
+const n2 = (x) => (x == null ? "–" : Number(x).toFixed(2).replace(".", ","));
+const leer = (k, d) => { try { return localStorage.getItem(k) ?? d; } catch (e) { return d; } };
+const guardar = (k, v) => { try { v == null ? localStorage.removeItem(k) : localStorage.setItem(k, v); } catch (e) {} };
+const b64 = (s) => Uint8Array.from(atob(s), (c) => c.charCodeAt(0));
+const E = { dia: null, liga: "todas", datos: null, vista: leer("pbct_vista", "partidos"), qv: 0, sel: [] };
+
+// ---- Acceso: contraseña -> código por Telegram -> sesión (todo lo comprueba el servidor de Supabase) ----
+const C = window.CONFIG || {};
+function dispositivo() {
+  let d = leer("pbct_disp", null);
+  if (!d) { const b = new Uint8Array(16); crypto.getRandomValues(b); d = Array.from(b, (x) => x.toString(16).padStart(2, "0")).join(""); guardar("pbct_disp", d); }
+  return d;
+}
+async function rpc(fn, args) {
+  const h = { "Content-Type": "application/json", apikey: C.supabase_clave };
+  if (!String(C.supabase_clave || "").startsWith("sb_")) h.Authorization = "Bearer " + C.supabase_clave;
+  const r = await fetch(`${C.supabase_url}/rest/v1/rpc/${fn}`, { method: "POST", headers: h, body: JSON.stringify(args) });
+  if (!r.ok) throw new Error("No se pudo conectar (" + r.status + ")");
+  return r.json();
+}
+async function reenviar() {
+  const b = $("#bReenviar"); b.disabled = true; msg("");
+  try {
+    const r = await rpc("pbct_reenviar", { ticket: E.ticket, disp: dispositivo() });
+    if (r.estado === "codigo") msg("Código nuevo enviado. Escribe el ÚLTIMO que te llegue (el anterior ya no vale).");
+    else if (r.estado === "limite") msg("Ya se ha reenviado 2 veces. Espera un poco y vuelve a poner la contraseña.");
+    else if (r.estado === "bloqueado") { msg(MENSAJES.bloqueado); $("#fCodigo").hidden = true; }
+    else { verLogin("clave"); msg("El intento ha caducado. Vuelve a poner la contraseña."); }
+  } catch (x) { msg(x.message); }
+  setTimeout(() => (b.disabled = false), 20000);
+}
+const MENSAJES = { error: "Incorrecta.", bloqueado: "Acceso bloqueado.", caducado: "El código ha caducado. Vuelve a enviar la contraseña.", sesion: "" };
+function msg(t) { $("#loginMsg").textContent = t || ""; }
+function verLogin(paso) {
+  $("#app").hidden = true; $("#login").hidden = false;
+  $("#fClave").hidden = paso === "codigo"; $("#fCodigo").hidden = paso !== "codigo";
+  (paso === "codigo" ? $("#codigo") : $("#clave")).focus();
+}
+async function enviarClave(e) {
+  e.preventDefault();
+  const b = $("#bClave"); b.disabled = true; msg("");
+  try {
+    const r = await rpc("pbct_entrar", { clave: $("#clave").value, disp: dispositivo() });
+    $("#clave").value = "";
+    if (r.estado === "codigo") { E.ticket = r.ticket; verLogin("codigo"); msg("Te ha llegado un código por Telegram. Si no llega en 1 minuto, pulsa «Reenviar»: no escribas uno al azar (2 fallos = bloqueo)."); }
+    else { msg(MENSAJES[r.estado] || "Incorrecta."); if (r.estado === "bloqueado") $("#fClave").hidden = true; }
+  } catch (x) { msg(x.message); }
+  b.disabled = false;
+}
+async function enviarCodigo(e) {
+  e.preventDefault();
+  const b = $("#bCodigo"); b.disabled = true; msg("");
+  try {
+    const r = await rpc("pbct_codigo", { ticket: E.ticket, codigo: $("#codigo").value.trim(), disp: dispositivo() });
+    $("#codigo").value = ""; E.ticket = null;
+    if (r.estado === "ok") { guardar("pbct_sesion", r.token); await cargarDatos(); }
+    else { verLogin("clave"); msg(MENSAJES[r.estado] || "Incorrecto."); if (r.estado === "bloqueado") $("#fClave").hidden = true; }
+  } catch (x) { msg(x.message); }
+  b.disabled = false;
+}
+// v2.1: con la sesión abierta se entra en el PROGRAMA COMPLETO (app.html, la misma interfaz que el PC).
+// La versión ligera de siempre sigue aquí: index.html#ligera
+async function alPrograma(tok) {
+  if (location.hash === "#ligera") return false;
+  try {
+    const r = await rpc("pbct_sesion", { token: tok });
+    if (r.estado === "ok") { location.replace("app.html"); return true; }
+  } catch (e) {}
+  return false;
+}
+async function cargarDatos() {
+  const tok = leer("pbct_sesion", null);
+  if (!tok) { verLogin("clave"); return; }
+  if (await alPrograma(tok)) return;
+  try {
+    const r = await rpc("pbct_datos", { token: tok });
+    if (r.estado !== "ok") { guardar("pbct_sesion", null); verLogin("clave"); msg(MENSAJES[r.estado] || ""); if (r.estado === "bloqueado") $("#fClave").hidden = true; return; }
+    if (!r.datos) { $("#login").hidden = true; $("#app").hidden = false; $("#lista").innerHTML = `<div class="vacio">Todavía no hay datos. Vuelve en unos minutos.</div>`; return; }
+    E.datos = Object.assign({}, r.datos, { usuario: r.nombre, actualizado: r.datos.actualizado || r.actualizado });
+    $("#login").hidden = true; $("#app").hidden = false;
+    pintar();
+  } catch (x) { verLogin("clave"); msg(x.message); }
+}
+async function salir() {
+  const tok = leer("pbct_sesion", null);
+  guardar("pbct_sesion", null);
+  try { if (tok) await rpc("pbct_salir", { token: tok }); } catch (x) {}
+  location.reload();
+}
+
+const hoyISO = () => { const d = new Date(); d.setMinutes(d.getMinutes() - d.getTimezoneOffset()); return d.toISOString().slice(0, 10); };
+function nombreDia(f) {
+  const hoy = hoyISO(), man = new Date(Date.now() + 864e5); man.setMinutes(man.getMinutes() - man.getTimezoneOffset());
+  if (f === hoy) return "Hoy";
+  if (f === man.toISOString().slice(0, 10)) return "Mañana";
+  return new Date(f + "T12:00:00").toLocaleDateString("es-ES", { weekday: "short", day: "numeric", month: "short" });
+}
+
+function filaPick(icono, p, clase, cuota) {
+  if (!p) return "";
+  return `<div class="pick ${clase || ""}"><span class="m">${icono} ${esc(p.mercado)}</span><span class="p">${pct(p.prob)}</span>
+    <span class="c">${cuota ? "@ " + n2(cuota) : p.cuota_justa ? "justa " + n2(p.cuota_justa) : ""}</span></div>`;
+}
+
+function pintar() {
+  const d = E.datos;
+  const act = new Date(d.actualizado);
+  $("#hola").textContent = d.usuario ? `Hola, ${d.usuario}` : "";
+  $("#actualizado").innerHTML = `Actualizado ${act.toLocaleString("es-ES", { weekday: "long", hour: "2-digit", minute: "2-digit" })} · cuotas ${esc(d.casa)}`
+    + (d.ia && d.ia.activa ? " · 🧠 IA de números activa" : "");
+  const dias = [...new Set(d.partidos.map((p) => p.fecha))].filter((f) => f >= hoyISO()).sort();
+  if (!E.dia || !dias.includes(E.dia)) E.dia = dias[0];
+  $("#dias").innerHTML = dias.map((f) => `<button data-d="${f}" class="${f === E.dia ? "activa" : ""}">${esc(nombreDia(f))} · ${d.partidos.filter((p) => p.fecha === f).length}</button>`).join("");
+  const ligas = [...new Set(d.partidos.filter((p) => p.fecha === E.dia).map((p) => p.liga))];
+  if (E.liga !== "todas" && !ligas.includes(E.liga)) E.liga = "todas";
+  $("#ligas").innerHTML = ligas.length > 1 ? [`<button data-l="todas" class="${E.liga === "todas" ? "activa" : ""}">Todas</button>`]
+    .concat(ligas.map((l) => `<button data-l="${esc(l)}" class="${E.liga === l ? "activa" : ""}">${esc(l)}</button>`)).join("") : "";
+  document.querySelectorAll("#dias button").forEach((b) => (b.onclick = () => { E.dia = b.dataset.d; pintar(); scrollTo(0, 0); }));
+  document.querySelectorAll("#ligas button").forEach((b) => (b.onclick = () => { E.liga = b.dataset.l; pintar(); }));
+  // Combinada segura (de hoy y mañana el primer día; de 3 días el resto)
+  const cb = (E.dia === dias[0] ? d.combinadas["1"] : d.combinadas["3"]) || {};
+  const c = (cb.combinadas || [])[0];
+  $("#combinada").innerHTML = c ? `<div class="tarjeta combi"><b>🧩 Combinada segura · ${c.n} partidos</b>
+      <div class="tot"><div>Acierta<b>${pct(c.prob)}</b></div><div>Cuota<b>@ ${n2(c.cuota)}</b></div><div>Con 2 €<b>${n2(c.cobras_2)} €</b></div></div>
+      ${c.piernas.map((p) => `<div class="pick"><span class="m">${esc(p.apuesta)}<br><span class="nota">${esc(p.liga)} · ${esc(p.home)} – ${esc(p.away)} · ${esc(nombreDia(p.fecha))} ${esc(p.hora || "")}</span></span><span class="p">${pct(p.prob)}</span><span class="c">@ ${n2(p.cuota)}</span></div>`).join("")}
+      ${(cb.combinadas || []).length > 1 ? `<details><summary>Otras: ${cb.combinadas.slice(1).map((x) => `${x.n} partidos ${pct(x.prob)} @${n2(x.cuota)}`).join(" · ")}</summary>
+        ${cb.combinadas.slice(1).map((x) => `<p class="nota">${x.piernas.map((p) => `${esc(p.apuesta)} (${esc(p.home)} – ${esc(p.away)})`).join(" + ")}</p>`).join("")}</details>` : ""}</div>` : "";
+  const lista = d.partidos.filter((p) => p.fecha === E.dia && (E.liga === "todas" || p.liga === E.liga));
+  // 💎 Bet365 paga más que el resto del mercado (todas las ligas, desde hoy)
+  const dm = d.partidos.filter((p) => p.fecha >= hoyISO()).flatMap((p) => (p.b365_valor || []).map((v) => ({ v, p }))).sort((a, b) => b.v.ventaja - a.v.ventaja);
+  $("#combinada").innerHTML += dm.length ? `<div class="tarjeta"><b>💎 Bet365 paga más que el mercado</b>
+    ${dm.slice(0, 6).map(({ v, p }) => `<div class="pick"><span class="m">${esc(v.mercado)}<br><span class="nota">${esc(p.liga)} · ${esc(p.home)} – ${esc(p.away)} · ${esc(nombreDia(p.fecha))} ${esc(p.hora || "")}</span></span>
+      <span class="p" style="color:var(--acento)">+${Math.round(v.ventaja * 100)}%</span><span class="c">@ ${n2(v.cuota)}</span></div>`).join("")}
+    <p class="nota">No es el modelo: Bet365 paga más de lo justo según Pinnacle o la media de las casas (el método de «Beat the Bookie»). Mira que la cuota siga igual antes de apostar.</p></div>` : "";
+  const pu = (x) => (x ? `<span class="puesto">${x}º</span>` : "");
+  $("#lista").innerHTML = lista.length ? lista.map((p) => `<div class="tarjeta partido ${esc(p.nivel)}">
+      <div class="cab"><span>${esc(p.liga)}</span><span>${esc(p.hora || "")} · fiabilidad ${esc(p.nivel || "")}</span></div>
+      <div class="equipos">${esc(p.home)}${pu((p.puestos || [])[0])} – ${esc(p.away)}${pu((p.puestos || [])[1])}</div>
+      ${p.p1 != null ? `<div class="barra"><div style="width:${p.p1 * 100}%;background:var(--local)">${pct(p.p1)}</div><div style="width:${p.px * 100}%;background:var(--empate)">${pct(p.px)}</div><div style="width:${p.p2 * 100}%;background:var(--visit)">${pct(p.p2)}</div></div>` : ""}
+      ${filaPick("🛡️", p.segura, "seg", p.segura && p.segura.cuota)}
+      ${filaPick("⚡", p.arriesgada)}
+      ${p.marcador ? `<div class="pick"><span class="m">🎯 Marcador ${p.marcador.h}-${p.marcador.a}</span><span class="p">${pct(p.marcador.prob)}</span><span class="c"></span></div>` : ""}
+      ${filaPick("🚩", p.corners)}${filaPick("🟨", p.tarjetas)}${filaPick("💥", p.paliza)}
+      ${(p.b365_valor || []).map((v) => `<div class="pick"><span class="m">💎 ${esc(v.mercado)}<br><span class="nota">Bet365 paga más que ${esc(v.referencia)} (justa ${n2(v.justa)})</span></span><span class="p" style="color:var(--acento)">+${Math.round(v.ventaja * 100)}%</span><span class="c">@ ${n2(v.cuota)}</span></div>`).join("")}
+      ${bloqueCT(p)}
+      ${(p.avisos || []).length || p.efecto_nombre ? `<div class="avisos">${(p.avisos || []).map((a) => `${a.icono} ${esc(a.texto)}`).join("<br>")}${p.efecto_nombre ? `<br>⚠️ ${esc(p.efecto_nombre)}` : ""}</div>` : ""}
+    </div>`).join("") : `<div class="vacio">No hay partidos ese día.</div>`;
+  document.querySelectorAll("[data-comprobar]").forEach((b) => (b.onclick = () => { E.partido = b.dataset.comprobar; E.sel = []; verVista("cuota"); }));
+  $("#pie").innerHTML = "Las cuotas «@» son de Bet365 cuando hay (si no, aproximadas). Con 2-4 €, lo más sensato son las 🛡️ seguras y la combinada de 2. " +
+    "El diario y el presupuesto están en el programa del PC.";
+  pintarQuiniela();
+  pintarCuota();
+  pintarExamen();
+  verVista(E.vista);
+}
+
+const idPartido = (p) => `${p.comp}|${p.fecha}|${p.home}|${p.away}`;
+const TIPOS = { g: "⚽ Goles y resultado", c: "🚩 Córners", t: "🟨 Tarjetas", r: "🎯 Remates a puerta" };
+
+// Córners y tarjetas de un partido (IA de córners y tarjetas si aprobó el examen)
+function bloqueCT(p) {
+  const ms = (p.mercados || []).filter((m) => m[3] === "c" || m[3] === "t" || m[3] === "r");
+  if (!ms.length) return "";
+  const ct = p.ct || {}, co = ct.corners, ta = ct.tarjetas, rm = ct.remates;
+  const fila = (m) => `<tr><td>${esc(m[1])}</td><td class="d">${pct(m[2])}</td><td class="d">${n2(1 / m[2])}</td></tr>`;
+  const top = (t) => ms.filter((m) => m[3] === t && m[2] >= 0.35 && m[2] <= 0.9).sort((a, b) => b[2] - a[2]).slice(0, 8).map(fila).join("");
+  return `<details style="margin-top:8px"><summary>🚩🟨🎯 Córners, tarjetas y remates${p.ia_ct ? " · IA ✅" : ""}</summary>
+    ${co ? `<p class="nota">Córners esperados: ${esc(p.home)} ${n2(co[0])} · ${esc(p.away)} ${n2(co[1])}${ta ? ` — Tarjetas: ${n2(ta[0])} · ${n2(ta[1])}` : ""}${rm ? ` — Remates a puerta: ${n2(rm[0])} · ${n2(rm[1])}` : ""}</p>` : ""}
+    <table class="tabla"><tr><th>🚩 Córners</th><th class="d">Prob.</th><th class="d">Justa</th></tr>${top("c")}
+      <tr><th>🟨 Tarjetas</th><th class="d"></th><th class="d"></th></tr>${top("t")}
+      ${ms.some((m) => m[3] === "r") ? `<tr><th>🎯 Remates a puerta</th><th class="d"></th><th class="d"></th></tr>${top("r")}` : ""}</table>
+    <p class="nota">Si Bet365 paga MÁS que la «justa», tiene valor.</p>
+    <button class="mini" data-comprobar="${esc(idPartido(p))}">🔎 Comprobar una cuota de este partido</button></details>`;
+}
+
+// «Crear apuesta» exacta: cada apuesta trae en qué simulaciones salió (bits); se cruzan las elegidas
+function probConjunta(p, claves) {
+  const B = p.bits || {};
+  if (!claves.every((k) => B[k])) return null;
+  const arr = claves.map((k) => b64(B[k]));
+  let n = 0;
+  for (let i = 0; i < arr[0].length; i++) {
+    let x = 255;
+    for (const a of arr) x &= a[i];
+    while (x) { n += x & 1; x >>= 1; }
+  }
+  return n / (arr[0].length * 8);
+}
+
+function verVista(v) {
+  E.vista = v; guardar("pbct_vista", v);
+  document.querySelectorAll("#pestanas button").forEach((b) => b.classList.toggle("activa", b.dataset.v === v));
+  $("#vPartidos").hidden = v !== "partidos"; $("#vQuiniela").hidden = v !== "quiniela"; $("#vCuota").hidden = v !== "cuota";
+  $("#vExamen").hidden = v !== "examen";
+  if (v === "cuota") pintarCuota();
+}
+
+// ---- La Quiniela ----
+function pintarQuiniela() {
+  const Q = E.datos.quinielas || {}, el = $("#vQuiniela");
+  if (!Q.versiones || !Q.versiones.length) { el.innerHTML = `<div class="vacio">${esc(Q.error || "Todavía no hay quiniela calculada.")}</div>`; return; }
+  if (E.qv >= Q.versiones.length) E.qv = 0;
+  const v = Q.versiones[E.qv], S = v.simulacion || {};
+  const color = (s) => (s === "Muy segura" ? "var(--ok)" : s === "Segura" ? "var(--acento)" : s === "Dudosa" ? "var(--aviso)" : "var(--mal)");
+  el.innerHTML = `<div class="tarjeta"><b>🎫 Jornada ${esc(Q.jornada || "")}</b> <span class="nota">${esc(Q.fecha || "")}</span>
+    <div class="chips" style="margin-top:6px">${Q.versiones.map((x, i) => `<button data-q="${i}" class="${i === E.qv ? "activa" : ""}">${esc(x.nombre)}</button>`).join("")}</div>
+    ${v.error ? `<p class="error">${esc(v.error)}</p>` : `
+    <div class="cifras"><div>Apuestas<b>${v.apuestas ?? "–"}</b></div><div>Cuesta<b>${n2(v.coste)} €</b></div><div>Aciertos (media)<b>${S.media != null ? Number(S.media).toFixed(1).replace(".", ",") : "–"}</b></div></div>
+    <div class="cifras"><div>10 o más<b>${pct(S.p10)}</b></div><div>12 o más<b>${pct(S.p12)}</b></div><div>14<b>${S.uno_entre_14 ? "1 de " + S.uno_entre_14.toLocaleString("es-ES") : "–"}</b></div></div>
+    <table class="tabla" style="margin-top:10px"><tr><th>#</th><th>Partido</th><th class="d">Signo</th><th class="d">1 · X · 2</th></tr>
+      ${v.filas.map((f) => `<tr><td>${f.n}</td><td>${esc(f.local)} – ${esc(f.visitante)}<br><span class="nota" style="color:${color(f.seguridad)}">${esc(f.seguridad || "")}</span></td>
+        <td class="d"><span class="signo">${f.n === 15 && f.pleno ? esc(f.pleno.signo || f.pleno.texto || f.signo) : esc(f.signo)}</span></td>
+        <td class="d nota">${(f.p || []).map((x) => Math.round(x * 100)).join(" · ")}</td></tr>`).join("")}</table>
+    ${(v.top || []).length ? `<details style="margin-top:8px"><summary>Columnas sencillas más probables</summary>${v.top.map((t) => `<p class="nota"><span class="signo">${esc(t.columna)}</span> · 1 de ${(t.uno_entre || 0).toLocaleString("es-ES")}</p>`).join("")}</details>` : ""}
+    <p class="nota">Simulada 200.000 veces con las probabilidades del programa (modelo + casas). Es una lotería: juega poco.</p>`}</div>
+    <div class="tarjeta"><b>💶 La Quiniela según tu dinero</b>
+      <div class="cifras" style="grid-template-columns:1fr 1fr"><div style="text-align:left">Tengo (€)<input class="cuota" id="qdEuros" inputmode="decimal" value="${esc(leer("qd_euros", "3"))}"></div>
+        <div style="text-align:left">Quiero subir<select id="qdObj"><option value="p10">10 o más</option><option value="p12">12 o más</option><option value="p14">los 14</option></select></div></div>
+      <div id="qdRes"></div></div>
+    ${E.datos.examen_quiniela ? `<div class="tarjeta"><b>🧪 Examen de la quiniela</b>${htmlExamenQuiniela(E.datos.examen_quiniela)}</div>` : ""}`;
+  el.querySelectorAll("[data-q]").forEach((b) => (b.onclick = () => { E.qv = +b.dataset.q; pintarQuiniela(); }));
+  const base = (Q.versiones.find((x) => !x.error && x.filas) || {}).filas;
+  $("#qdObj").value = leer("qd_obj", "p10");
+  const calc = () => { const e = parseFloat(($("#qdEuros").value || "").replace(",", ".")) || 0, o = $("#qdObj").value;
+    guardar("qd_euros", $("#qdEuros").value); guardar("qd_obj", o); $("#qdRes").innerHTML = htmlQuinielaDinero(quinielaSegunDinero(base, e, o), o); };
+  $("#qdEuros").oninput = calc; $("#qdObj").onchange = calc; calc();
+}
+
+// ---- v2.0.3: La Quiniela según tu dinero (dobles y triples donde más suben las probabilidades) ----
+const PRECIO_Q = 0.75;
+function distAciertos(q) {           // probabilidad de 0..14 aciertos (cada partido acierta con prob. q[i])
+  let d = [1];
+  for (const x of q) { const n = new Array(d.length + 1).fill(0); d.forEach((v, k) => { n[k] += v * (1 - x); n[k + 1] += v * x; }); d = n; }
+  return d;
+}
+function quinielaSegunDinero(filas, euros, objetivo) {
+  const F = (filas || []).filter((f) => f.n <= 14 && f.p && f.p.length === 3).slice(0, 14);
+  if (F.length < 14) return null;
+  const N = Math.floor(euros / PRECIO_Q + 1e-9);
+  if (N < 2) return { error: `Con ${String(euros).replace(".", ",")} € no llega: el mínimo son 2 apuestas (1,50 €).` };
+  const P = F.map((f) => { const s = f.p[0] + f.p[1] + f.p[2]; return f.p.map((x) => x / s); });
+  const ord = P.map((p) => [0, 1, 2].sort((a, b) => p[b] - p[a]));
+  const Q = P.map((p, i) => [p[ord[i][0]], p[ord[i][0]] + p[ord[i][1]], 1]);   // cubre: sencillo, doble, triple
+  const med = (tipos) => { const q = tipos.map((t, i) => Q[i][t]); const d = distAciertos(q);
+    const desde = (k) => d.slice(k).reduce((a, b) => a + b, 0);
+    return { p10: desde(10), p12: desde(12), p13: desde(13), p14: d[14], media: q.reduce((a, b) => a + b, 0) }; };
+  let mejor = null;
+  for (let t = 0; 3 ** t <= N && t <= 14; t++) {
+    for (let d = 0; 2 ** d * 3 ** t <= N && d + t <= 14; d++) {
+      const coste = 2 ** d * 3 ** t;
+      if (coste < 2) continue;
+      // reparto que maximiza los 14 (producto de lo que cubre cada partido): programación dinámica
+      const L = Q.map((q) => q.map((x) => Math.log(Math.max(x, 1e-12))));
+      let dp = new Map([["0,0", { v: 0, tipos: [] }]]);
+      for (let i = 0; i < 14; i++) {
+        const nd = new Map();
+        for (const [k, st] of dp) {
+          const [a, b] = k.split(",").map(Number);
+          for (const [tp, da, db] of [[0, 0, 0], [1, 1, 0], [2, 0, 1]]) {
+            if (a + da > d || b + db > t) continue;
+            const kk = `${a + da},${b + db}`, v = st.v + L[i][tp];
+            if (!nd.has(kk) || nd.get(kk).v < v) nd.set(kk, { v, tipos: st.tipos.concat([tp]) });
+          }
+        }
+        dp = nd;
+      }
+      const fin = dp.get(`${d},${t}`);
+      if (!fin) continue;
+      let tipos = fin.tipos, m = med(tipos);
+      if (objetivo !== "p14") {      // para 10 o 12 aciertos, a veces conviene cambiar dónde van: búsqueda local
+        let mejora = true;
+        while (mejora) {
+          mejora = false;
+          for (let i = 0; i < 14; i++) for (let j = 0; j < 14; j++) {
+            if (tipos[i] === tipos[j]) continue;
+            const pr = tipos.slice(); [pr[i], pr[j]] = [pr[j], pr[i]];
+            const mm = med(pr);
+            if (mm[objetivo] > m[objetivo] + 1e-9) { tipos = pr; m = mm; mejora = true; }
+          }
+        }
+      }
+      const r = { dobles: d, triples: t, apuestas: coste, coste: coste * PRECIO_Q, tipos, ...m };
+      if (!mejor || r[objetivo] > mejor[objetivo] + 1e-12 || (Math.abs(r[objetivo] - mejor[objetivo]) < 1e-12 && r.coste < mejor.coste)) mejor = r;
+    }
+  }
+  if (!mejor) return null;
+  mejor.signos = mejor.tipos.map((tp, i) => tp === 2 ? "1X2" : ord[i].slice(0, tp + 1).sort().map((k) => "1X2"[k]).join(""));
+  mejor.filas = F;
+  return mejor;
+}
+function htmlQuinielaDinero(r, objetivo) {
+  if (!r) return `<p class="nota">Faltan partidos con probabilidades para calcularla.</p>`;
+  if (r.error) return `<p class="nota">⚠️ ${esc(r.error)}</p>`;
+  const fmt = (x) => (x == null ? "–" : x >= 0.01 ? Math.round(x * 100) + "%" : x > 0 ? "1 de " + Math.round(1 / x).toLocaleString("es-ES") : "0%");
+  const nom = { p10: "10 o más aciertos", p12: "12 o más aciertos", p14: "los 14" };
+  return `<p><b>${r.dobles} doble${r.dobles === 1 ? "" : "s"}${r.triples ? ` y ${r.triples} triple${r.triples === 1 ? "" : "s"}` : ""}</b> = ${r.apuestas} apuestas = <b>${r.coste.toFixed(2).replace(".", ",")} €</b>
+      <span class="nota">(lo que más sube «${nom[objetivo]}» con tu dinero)</span></p>
+    <div class="cifras"><div>10 o más<b>${fmt(r.p10)}</b></div><div>12 o más<b>${fmt(r.p12)}</b></div><div>14<b>${fmt(r.p14)}</b></div></div>
+    <table class="tabla" style="margin-top:8px"><tr><th>#</th><th>Partido</th><th class="d">Signo</th></tr>
+    ${r.filas.map((f, i) => `<tr><td>${f.n}</td><td>${esc(f.local)} – ${esc(f.visitante)}</td><td class="d"><b class="signo">${r.signos[i]}</b>${r.tipos[i] ? ` <span class="nota">${r.tipos[i] === 2 ? "triple" : "doble"}</span>` : ""}</td></tr>`).join("")}</table>
+    <p class="nota">Aciertos esperados: ${r.media.toFixed(1).replace(".", ",")} de 14. El Pleno al 15 es aparte (el de la quiniela del programa).</p>`;
+}
+function htmlExamenQuiniela(e) {
+  if (!e || !e.resumen || !e.resumen.jornadas) return `<p class="nota">Todavía no hay jornadas comprobadas para el examen.</p>`;
+  const R = e.resumen, pc = (x) => (x == null ? "–" : Math.round(x * 100) + "%");
+  const tabla = (tit, obj, cols) => { const en = Object.entries(obj || {}); return en.length ? `<h4 style="margin:10px 0 4px">${tit}</h4><table class="tabla">
+    <tr><th></th><th class="d">Partidos</th><th class="d">Acierta</th><th class="d">Decía</th></tr>
+    ${en.map(([k, v]) => `<tr><td>${esc(k)}</td><td class="d">${v.n}</td><td class="d">${pc(v.acierto)}</td><td class="d">${pc(v.dice)}</td></tr>`).join("")}</table>` : ""; };
+  return `<div class="cifras"><div>Jornadas<b>${R.jornadas}</b></div><div>Aciertos de media<b>${R.media.toFixed(1).replace(".", ",")}</b></div><div>Esperaba<b>${R.esperada.toFixed(1).replace(".", ",")}</b></div></div>
+    ${(e.avisos || []).map((a) => `<p class="nota">⚠️ ${esc(a)}</p>`).join("")}
+    <table class="tabla" style="margin-top:8px"><tr><th>Jornada</th><th class="d">Aciertos</th><th class="d">Esperados</th><th class="d">Apuestas</th></tr>
+      ${e.jornadas.slice().reverse().map((j) => `<tr><td>J${esc(j.jornada)} <span class="nota">${esc(j.fecha || "")}</span></td><td class="d"><b>${j.aciertos}</b></td><td class="d">${String(j.esperados).replace(".", ",")}</td><td class="d">${j.apuestas ?? "–"}</td></tr>`).join("")}</table>
+    ${tabla("Por signo que pusiste (sencillos)", e.por_puesto)}
+    <h4 style="margin:10px 0 4px">Signos que salieron: cuántos cubrió la quiniela</h4><table class="tabla"><tr><th></th><th class="d">Salieron</th><th class="d">Cubiertos</th><th class="d">Prob. media que le daba</th></tr>
+      ${Object.entries(e.por_real || {}).map(([k, v]) => `<tr><td><b class="signo">${esc(k)}</b></td><td class="d">${v.n}</td><td class="d">${v.cubiertos} (${pc(v.cubierto)})</td><td class="d">${pc(v.esperado / v.n)}</td></tr>`).join("")}</table>
+    ${tabla("Por liga", e.por_liga)}${tabla("Sencillos, dobles y triples", e.por_tipo)}
+    <p class="nota">«Decía» = probabilidad media que daba a lo que puso. Si acierta mucho menos de lo que decía en una liga, esos partidos están mal calculados.</p>`;
+}
+
+// ---- 🧪 Examen de las apuestas de la app (lo que de verdad pasó) ----
+function pintarExamen() {
+  const el = $("#vExamen"), d = E.datos.examen;
+  if (!d || d.error || !d.tipos) { el.innerHTML = `<div class="vacio">${esc((d && d.error) || "Todavía no hay examen: se calcula en la próxima actualización.")}</div>`; return; }
+  const pc = (x) => (x == null ? "–" : Math.round(x * 100) + "%");
+  const fila = (k, x) => `<tr><td>${esc(k)}</td><td class="d">${x.n}</td><td class="d">${x.n ? pc(x.acierto) : "–"}</td><td class="d nota">${x.n ? pc(x.dice) : "–"}</td>
+    <td class="d ${x.roi > 0 ? "verde" : x.roi < 0 ? "rojo" : ""}">${x.roi != null ? pc(x.roi) : "–"}</td></tr>`;
+  const tabla = (tit, obj) => { const en = Object.entries(obj || {}).filter(([, x]) => x.n); return en.length ? `<div class="tarjeta"><b>${tit}</b><table class="tabla" style="margin-top:6px">
+    <tr><th></th><th class="d">N</th><th class="d">Acierta</th><th class="d">Decía</th><th class="d">ROI</th></tr>${en.map(([k, x]) => fila(k, x)).join("")}</table></div>` : ""; };
+  el.innerHTML = `<div class="tarjeta"><b>🧪 Examen de las apuestas de la app</b>
+      <p class="nota">Lo que de verdad pasó con lo que recomendó la app${d.desde ? ` desde el ${esc(d.desde)}` : ""}. «Decía» = la probabilidad que daba. ROI con 1 € por apuesta y la cuota de Bet365 (real en 1X2 y +/-2.5; en el resto, estimada).</p>
+      ${(d.deja || []).length ? `<div class="veredicto sin_valor">❌ Deja de jugar:<div class="nota" style="font-weight:400">${d.deja.map(esc).join("<br>")}</div></div>` : ""}
+      ${(d.fiate || []).length ? `<div class="veredicto valor">✅ De fiar:<div class="nota" style="font-weight:400">${d.fiate.map(esc).join("<br>")}</div></div>` : ""}
+      ${(d.info || []).map((t) => `<p class="nota">ℹ️ ${esc(t)}</p>`).join("")}</div>
+    ${tabla("Por tipo de apuesta", d.tipos)}${tabla("🛡️ Seguras por liga", d.por_liga)}${tabla("🛡️ Seguras por mercado", d.por_mercado)}
+    ${tabla("🛡️ Seguras por probabilidad", d.por_tramo)}${tabla("🛡️ Seguras por fiabilidad", d.por_nivel)}${tabla("🛡️ Seguras por mes", d.por_mes)}
+    <p class="nota">Con menos de ${d.minimo || 15} apuestas de un tipo no se saca ninguna conclusión.</p>`;
+}
+
+// ---- ¿Paga bien? Comprobar la cuota de Bet365 de cualquier apuesta ----
+function pintarCuota() {
+  const el = $("#vCuota"), d = E.datos;
+  const ps = d.partidos.filter((p) => p.fecha >= hoyISO() && (p.mercados || []).length);
+  if (!ps.length) { el.innerHTML = `<div class="vacio">No hay partidos con apuestas calculadas.</div>`; return; }
+  if (!E.partido || !ps.some((p) => idPartido(p) === E.partido)) E.partido = idPartido(ps[0]);
+  const p = ps.find((x) => idPartido(x) === E.partido);
+  const grupos = Object.entries(TIPOS).map(([t, n]) => { const ms = p.mercados.filter((m) => m[3] === t);
+    return ms.length ? `<optgroup label="${n}">${ms.sort((a, b) => a[1].localeCompare(b[1])).map((m) => `<option value="${esc(m[0])}">${esc(m[1])} (${pct(m[2])})</option>`).join("")}</optgroup>` : ""; }).join("");
+  el.innerHTML = `<div class="tarjeta"><b>🔎 ¿Paga bien Bet365?</b>
+    <p class="nota">Elige el partido y la apuesta (por ejemplo «Real Madrid: más de 5.5 córners» o «Ambos equipos reciben tarjeta»), pon la cuota y te digo si compensa.</p>
+    <div class="campo"><label>Partido</label><select id="cPartido">${ps.map((x) => `<option value="${esc(idPartido(x))}" ${idPartido(x) === E.partido ? "selected" : ""}>${esc(nombreDia(x.fecha))} · ${esc(x.home)} – ${esc(x.away)}</option>`).join("")}</select></div>
+    <div class="campo"><label>Apuesta</label><select id="cMercado">${grupos}</select></div>
+    <button class="mini" id="cAnadir">➕ Añadir otra del mismo partido («Crear apuesta»)</button>
+    <div id="cChips" class="nota" style="margin:6px 0"></div>
+    <div class="campo"><label>Cuota de Bet365</label><input class="cuota" id="cCuota" inputmode="decimal" placeholder="por ejemplo 1,83"></div>
+    <button class="primario" id="cCalc" style="width:100%">Comprobar</button>
+    <div id="cRes"></div></div>`;
+  const pintarSel = () => ($("#cChips").innerHTML = E.sel.length ? "Selecciones: " + E.sel.map((k, i) => `${esc((p.mercados.find((m) => m[0] === k) || [k, k])[1])} <a href="#" data-x="${i}">✕</a>`).join(" + ") : "");
+  pintarSel();
+  $("#cPartido").onchange = () => { E.partido = $("#cPartido").value; E.sel = []; pintarCuota(); };
+  $("#cAnadir").onclick = () => { const k = $("#cMercado").value; if (k && !E.sel.includes(k)) E.sel.push(k); pintarSel(); };
+  $("#cChips").onclick = (e) => { if (e.target.dataset.x != null) { e.preventDefault(); E.sel.splice(+e.target.dataset.x, 1); pintarSel(); } };
+  $("#cCalc").onclick = () => {
+    const actual = $("#cMercado").value;
+    const claves = E.sel.includes(actual) ? E.sel.slice() : E.sel.concat([actual]);
+    const ms = claves.map((k) => p.mercados.find((m) => m[0] === k)).filter(Boolean);
+    if (!ms.length) return;
+    const exacta = ms.length > 1 ? probConjunta(p, ms.map((m) => m[0])) : null;
+    const prob = ms.length === 1 ? ms[0][2] : exacta != null ? exacta : ms.reduce((a, m) => a * m[2], 1), aprox = ms.length > 1 && exacta == null;
+    const cuota = parseFloat(($("#cCuota").value || "").replace(",", "."));
+    let html = `<div class="cifras"><div>${ms.length > 1 ? "Salen todas" : "Sale"}${aprox ? " (aprox.)" : ""}<b>${pct(prob)}</b></div><div>Cuota justa<b>${n2(1 / prob)}</b></div>
+      <div>${cuota > 1 ? "Bet365 cree" : "Pon la cuota"}<b>${cuota > 1 ? pct(1 / cuota) : "–"}</b></div></div>`;
+    if (cuota > 1) {
+      const ev = prob * cuota - 1, ver = ev > 0.03 ? "valor" : ev > -0.04 ? "justo" : "sin_valor";
+      html += `<div class="veredicto ${ver}">${ver === "valor" ? "✅ Paga MÁS de lo que vale: tiene valor" : ver === "justo" ? "➖ Cuota justa: ni a favor ni en contra" : "❌ Paga MENOS de lo que vale: no la juegues"}
+        <div class="nota" style="font-weight:400;margin-top:4px">Con 2 € muchas veces: ${ev >= 0 ? "+" : ""}${n2(ev * 2)} € de media por apuesta.
+        ${ver !== "valor" && cuota >= 2 ? " Que pague mucho no quiere decir que sea fácil: Bet365 suele acertar." : ""}</div></div>`;
+    }
+    if (exacta != null) {
+      const indep = ms.reduce((a, m) => a * m[2], 1);
+      html += `<p class="nota">✅ Cálculo exacto con 800 partidos simulados: tiene en cuenta que las selecciones van relacionadas
+        (si fueran independientes saldría ${pct(indep)}).${ms.map((m) => `<br>· ${esc(m[1])}: ${pct(m[2])}`).join("")}</p>`;
+    }
+    if (aprox) html += `<p class="nota">⚠️ Para este partido no hay simulaciones guardadas: se multiplican como si fueran independientes (aproximado).</p>`;
+    $("#cRes").innerHTML = html;
+  };
+}
+
+// ---- Avisos (notificaciones push) ------------------------------------------------------------
+function claveVapid(b64url) {
+  const p = "=".repeat((4 - (b64url.length % 4)) % 4), s = (b64url + p).replace(/-/g, "+").replace(/_/g, "/");
+  return Uint8Array.from(atob(s), (c) => c.charCodeAt(0));
+}
+async function activarAvisos() {
+  if (!("serviceWorker" in navigator) || !("PushManager" in window)) {
+    alert("Este navegador no admite avisos. En iPhone: primero «Compartir → Añadir a pantalla de inicio» y abre la app desde ahí."); return;
+  }
+  if (!C.vapid) { alert("Los avisos aún no están configurados."); return; }
+  const permiso = await Notification.requestPermission();
+  if (permiso !== "granted") { alert("Sin permiso no se pueden mandar avisos. Actívalo en los ajustes del navegador."); return; }
+  const reg = await navigator.serviceWorker.ready;
+  let sub = await reg.pushManager.getSubscription();
+  if (!sub) sub = await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: claveVapid(C.vapid) });
+  const cuerpo = "Datos del móvil para los avisos (no los cambies). Pulsa «Submit new issue» / «Crear»:\n\n" + JSON.stringify(sub.toJSON());
+  const url = `https://github.com/${C.repo}/issues/new?title=${encodeURIComponent("Activar avisos")}&body=${encodeURIComponent(cuerpo)}`;
+  guardar("avisos", "1");
+  if (confirm("Último paso: guardar este móvil en GitHub.\n\nAceptar = es MI cuenta: se abre GitHub y pulsas el botón verde «Submit new issue».\nCancelar = es el móvil de un amigo: se copia un enlace para mandárselo al dueño de la web.")) { location.href = url; return; }
+  try {
+    if (navigator.share) await navigator.share({ title: "Activar avisos de PBCT", text: "Ábrelo con tu cuenta de GitHub y pulsa Submit new issue:", url });
+    else { await navigator.clipboard.writeText(url); alert("Enlace copiado. Mándaselo por WhatsApp al dueño de la web: él lo abre y pulsa «Submit new issue»."); }
+  } catch (e) { prompt("Copia este enlace y mándaselo al dueño de la web:", url); }
+}
+
+if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(() => {});
+$("#fClave").onsubmit = enviarClave;
+$("#fCodigo").onsubmit = enviarCodigo;
+$("#bReenviar").onclick = reenviar;
+$("#btnSalir").onclick = salir;
+document.querySelectorAll("#pestanas button").forEach((b) => (b.onclick = () => verVista(b.dataset.v)));
+$("#btnRecargar").onclick = cargarDatos;
+$("#btnAvisos").onclick = () => activarAvisos().catch((e) => alert("No se pudieron activar: " + e.message));
+if (leer("pbct_sesion", null)) cargarDatos();
+else { verLogin("clave"); if (location.hash === "#bloqueado") { msg(MENSAJES.bloqueado); $("#fClave").hidden = true; } }
+</script>
+</body>
+</html>
