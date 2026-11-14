@@ -1,0 +1,1 @@
+window.CONFIG = {"vapid": "BOC7eWzv3KZ1U0tvGIyokVYvyMfdaX0OEPKnIoP9qpBCvqxm0VkPxb3-7dU_4w0kEgF5mVzBaEZKD631bCIX1wc", "repo": "pronos-pollazos-tipster/predictor-futbol", "supabase_url": "https://xxsigcxefjgbtajsyajh.supabase.co", "supabase_clave": "sb_publishable_vfXZYj5umGTnHbTrfxDFCw_afHFNtgm"};
