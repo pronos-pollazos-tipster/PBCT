@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; connect-src 'self' https://xxsigcxefjgbtajsyajh.supabase.co https://site.api.espn.com; worker-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'none'; form-action 'self'">
+<meta name="referrer" content="no-referrer">
+<meta name="theme-color" content="#000000">
+<title>PBCT</title>
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icono-192.png">
+<link rel="apple-touch-icon" href="icono-192.png">
+<style>
+  :root { --fondo: #0d1512; --panel: #142019; --panel2: #1a2a21; --borde: #24382c; --texto: #e7f2ea; --suave: #93a99a;
+    --acento: #c6f432; --ok: #4ade80; --aviso: #fbbf24; --mal: #f87171; --local: #3b82f6; --empate: #7c8a82; --visit: #f97316; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: var(--fondo); color: var(--texto); font: 16px/1.45 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+  body { padding: env(safe-area-inset-top) 0 env(safe-area-inset-bottom); }
+  header { position: sticky; top: 0; z-index: 5; background: color-mix(in srgb, var(--fondo) 92%, transparent); backdrop-filter: blur(8px);
+    border-bottom: 1px solid var(--borde); padding: 10px 16px; display: flex; align-items: center; gap: 10px; }
+  header h1 { font-size: 1.05rem; margin: 0; flex: 1; } header h1 b { color: var(--acento); }
+  main { max-width: 760px; margin: 0 auto; padding: 12px 16px 40px; }
+  button { font: inherit; color: inherit; background: var(--panel2); border: 1px solid var(--borde); border-radius: 10px; padding: 8px 12px; cursor: pointer; }
+  button.primario { background: var(--acento); color: #0d1512; border-color: transparent; font-weight: 700; }
+  button.mini { padding: 4px 10px; font-size: .85rem; }
+  .tarjeta { background: var(--panel); border: 1px solid var(--borde); border-radius: 14px; padding: 14px; margin: 12px 0; }
+  .nota { color: var(--suave); font-size: .86rem; }
+  .chips { display: flex; gap: 6px; overflow-x: auto; padding: 4px 0 8px; scrollbar-width: none; }
+  .chips button { white-space: nowrap; border-radius: 99px; }
+  .chips button.activa { background: var(--acento); color: #0d1512; border-color: transparent; font-weight: 700; }
+  .partido { border-left: 4px solid var(--borde); }
+  .partido.Alta { border-left-color: var(--ok); } .partido.Media { border-left-color: var(--aviso); } .partido.Baja { border-left-color: var(--mal); }
+  .cab { display: flex; justify-content: space-between; gap: 8px; font-size: .82rem; color: var(--suave); }
+  .equipos { font-weight: 700; font-size: 1.02rem; margin: 4px 0 8px; }
+  .puesto { font-size: .72em; color: var(--suave); border: 1px solid var(--borde); border-radius: 6px; padding: 0 4px; margin-left: 3px; vertical-align: middle; }
+  .pick { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; padding: 6px 0; border-top: 1px dashed var(--borde); }
+  .pick:first-of-type { border-top: 0; }
+  .pick .m { flex: 1; } .pick .p { font-weight: 800; font-size: 1.1rem; } .pick .c { color: var(--suave); font-size: .85rem; min-width: 4.2em; text-align: right; }
+  .seg .p { color: var(--ok); }
+  .avisos { font-size: .82rem; color: var(--aviso); margin-top: 6px; }
+  .barra { display: flex; height: 18px; border-radius: 6px; overflow: hidden; font-size: .7rem; margin: 6px 0 2px; }
+  .barra div { display: flex; align-items: center; justify-content: center; color: #fff; min-width: 0; }
+  .combi .tot { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin: 8px 0; }
+  .combi .tot div { background: var(--panel2); border-radius: 10px; padding: 8px; text-align: center; }
+  .combi .tot b { display: block; font-size: 1.15rem; }
+  #login { position: fixed; inset: 0; background: #000; color: #fff; display: flex; flex-direction: column; align-items: center;
+    justify-content: center; padding: 24px; z-index: 20; }
+  #login[hidden] { display: none; }
+  #login form { width: min(340px, 100%); display: flex; flex-direction: column; gap: 12px; }
+  #login form[hidden] { display: none; }
+  #login label { color: #fff; font-size: 1.05rem; letter-spacing: .02em; }
+  #login input { width: 100%; font: inherit; font-size: 1.1rem; padding: 12px; border-radius: 8px; border: 1px solid #fff; background: #000;
+    color: #fff; outline: none; }
+  #login input:focus { border-color: #fff; box-shadow: 0 0 0 2px rgba(255, 255, 255, .25); }
+  #login button { background: #000; color: #fff; border: 1px solid #fff; border-radius: 8px; padding: 12px; font-weight: 700; }
+  #login button:disabled { opacity: .5; }
+  #loginMsg { color: #fff; min-height: 1.4em; margin-top: 14px; text-align: center; width: min(340px, 100%); font-size: .95rem; }
+  .error { color: var(--mal); }
+  .vacio { text-align: center; color: var(--suave); padding: 24px 0; }
+  details summary { cursor: pointer; color: var(--suave); font-size: .9rem; }
+  .pestanas { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin: 8px 0 4px; }
+  .pestanas button { border-radius: 10px; padding: 9px 2px; font-size: .8rem; }
+  .verde { color: var(--ok); } .rojo { color: var(--mal); }
+  .pestanas button.activa { background: var(--acento); color: #0d1512; border-color: transparent; font-weight: 700; }
+  .tabla { width: 100%; border-collapse: collapse; font-size: .86rem; }
+  .tabla td, .tabla th { padding: 5px 4px; border-top: 1px solid var(--borde); text-align: left; }
+  .tabla th { color: var(--suave); font-weight: 600; } .tabla .d { text-align: right; white-space: nowrap; }
+  .signo { font-weight: 800; color: var(--acento); letter-spacing: .05em; }
+  select, input.cuota { font: inherit; color: var(--texto); background: var(--panel2); border: 1px solid var(--borde); border-radius: 10px; padding: 9px; width: 100%; }
+  .campo { margin: 8px 0; } .campo label { display: block; font-size: .85rem; color: var(--suave); margin-bottom: 3px; }
+  .veredicto { border-radius: 12px; padding: 12px; margin-top: 10px; font-weight: 700; }
+  .veredicto.valor { background: color-mix(in srgb, var(--ok) 20%, transparent); } .veredicto.justo { background: color-mix(in srgb, var(--aviso) 18%, transparent); }
+  .veredicto.sin_valor { background: color-mix(in srgb, var(--mal) 18%, transparent); }
+  .cifras { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 10px; }
+  .cifras div { background: var(--panel2); border-radius: 10px; padding: 8px; text-align: center; font-size: .8rem; color: var(--suave); }
+  .cifras b { display: block; font-size: 1.15rem; color: var(--texto); }
+</style>
+</head>
+<body>
+<div id="login" hidden>
+  <form id="fClave" autocomplete="off">
+    <label for="clave">Contraseña</label>
+    <input id="clave" type="password" autocomplete="current-password" autocapitalize="off" autocorrect="off" spellcheck="false" required>
+    <button type="submit" id="bClave">Enviar contraseña</button>
+  </form>
+  <form id="fCodigo" hidden autocomplete="off">
+    <label for="codigo">Código</label>
+    <input id="codigo" inputmode="numeric" pattern="[0-9]*" maxlength="6" autocomplete="one-time-code" required>
+    <button type="submit" id="bCodigo">Enviar código</button>
+    <button type="button" id="bReenviar" style="border-color:#555;font-weight:400">¿No te ha llegado? Reenviar código</button>
+  </form>
+  <p id="loginMsg"></p>
+</div>
+<div id="app" hidden>
+  <header><h1><b>PBCT</b></h1><button class="mini" id="btnAvisos">🔔 Avisos</button><button class="mini" id="btnRecargar" title="Recargar">⟳</button><button class="mini" id="btnSalir" title="Salir">🔒</button></header>
+  <main>
+    <p id="hola" style="margin:4px 0 0;font-weight:700"></p>
+    <p class="nota" id="actualizado"></p>
+    <div class="pestanas" id="pestanas"><button data-v="partidos" class="activa">⚽ Partidos</button><button data-v="quiniela">🎫 Quiniela</button><button data-v="cuota">🔎 Cuotas</button><button data-v="examen">🧪 Examen</button></div>
+    <section id="vPartidos">
+      <div class="chips" id="dias"></div>
+      <div class="chips" id="ligas"></div>
+      <div id="combinada"></div>
+      <div id="lista"></div>
+    </section>
+    <section id="vQuiniela" hidden></section>
+    <section id="vCuota" hidden></section>
+    <section id="vExamen" hidden></section>
+    <p class="nota" id="pie"></p>
+  </main>
+</div>
+<script src="config.js"></script>
+<script src="entrada.js"></script>
+</body>
+</html>
